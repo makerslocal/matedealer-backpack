@@ -115,6 +115,24 @@ void setup()
 		httpd.send(200, "text/html", httpDataHeader);
 		httpd.client().stop();
 	});
+	httpd.on("/debug", [&](){
+		httpd.setContentLength(CONTENT_LENGTH_UNKNOWN);
+		httpd.send(200, "text/html", httpDataHeader);
+		httpd.sendContent("<h1>Debug</h1>");
+		httpd.sendContent(String("<h2>Version ") + VERSION + "</h2>");
+		httpd.sendContent(R"(
+			<form method='POST' action='/debug/reset'>
+				<button type='submit'>Restart</button>
+			</form>
+			<form method='POST' action='/debug/disconnect'>
+				<button type='submit'>Forget connection info</button>
+			</form>
+		)");
+		httpd.client().stop();
+	});
+	httpd.on("/debug/reset", [&](){ ESP.restart(); });
+	httpd.on("/debug/disconnect", [&](){ WiFi.disconnect(); ESP.restart(); });
+
 	// handler for the /update form POST (once file upload finishes)
 	httpd.on("/update", HTTP_POST, [&](){
 		httpd.sendHeader("Connection", "close");
